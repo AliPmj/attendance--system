@@ -1,0 +1,126 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: attendance_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  attendance:
+    build:
+      context: ./services/attendance
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8000"
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - DATABASE_URL=postgresql://admin:password@postgres:5432/attendance_db
+      - REDIS_URL=redis://redis:6379
+
+  catering:
+    build:
+      context: ./services/catering
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8000"
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - DATABASE_URL=postgresql://admin:password@postgres:5432/attendance_db
+      - REDIS_URL=redis://redis:6379
+
+  access-control:
+    build:
+      context: ./services/access-control
+      dockerfile: Dockerfile
+    ports:
+      - "8003:8000"
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - DATABASE_URL=postgresql://admin:password@postgres:5432/attendance_db
+      - REDIS_URL=redis://redis:6379
+
+  ai-engine:
+    build:
+      context: ./services/ai-engine
+      dockerfile: Dockerfile
+    ports:
+      - "8004:8000"
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - DATABASE_URL=postgresql://admin:password@postgres:5432/attendance_db
+      - REDIS_URL=redis://redis:6379
+
+  graphql:
+    build:
+      context: ./services/graphql
+      dockerfile: Dockerfile
+    ports:
+      - "8005:8000"
+    depends_on:
+      - attendance
+      - catering
+      - access-control
+    environment:
+      - ATTENDANCE_URL=http://attendance:8000
+      - CATERING_URL=http://catering:8000
+      - ACCESS_CONTROL_URL=http://access-control:8000
+
+  frontend:
+    build:
+      context: ./services/frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - attendance
+      - catering
+      - access-control
+      - graphql
+
+  mock-jira:
+    image: python:3.10-slim
+    command: ["python", "-m", "http.server", "8080"]
+    ports:
+      - "8080:8080"
+
+  mock-calendar:
+    image: python:3.10-slim
+    command: ["python", "-m", "http.server", "8081"]
+    ports:
+      - "8081:8081"
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - frontend
+      - attendance
+      - catering
+      - access-control
+      - ai-engine
+      - graphql
+
+volumes:
+  postgres_data:

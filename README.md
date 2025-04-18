@@ -1,219 +1,160 @@
-Attendance, Catering, and Access Control System Documentation
+Attendance, Catering, and Access Control System
 Overview
-This project is a microservices-based system designed for a company with one floor, two rooms, a canteen, and a basement parking area. It automates attendance tracking, catering management, and access control, integrating AI-driven features, role-based access control (RBAC), and sustainability initiatives. The system is built to be scalable, secure, and compliant with GDPR, supporting multilingual interfaces (English, Persian, Arabic) and offline functionality.
+This project is a microservices-based system designed for a company with one floor, two rooms, a canteen, and a basement parking area. It provides three core functionalities:
 
-Key Objectives
-Attendance: Track employee attendance using face recognition, fingerprint, NFC, or QR codes, with penalties/rewards, leave management, and Jira integration.
-Catering: Automate food reservations with AI-driven menu recommendations, QR-based tokens, and sustainability incentives for recyclable containers.
-Access Control: Manage access to rooms, canteen, and parking using face recognition (including low-light and multi-person support), license plate recognition, and IoT integration for emergency systems.
-General Features: Provide ERP/CRM/Jira integrations (mocked), transparency reports, opt-out options for tracking, and energy optimization for access devices.
-The system achieves 100% alignment with the provided requirements document, with placeholders for hardware-dependent features (e.g., low-light face recognition) that require physical devices for full implementation.
+Attendance: Tracks employee presence with face recognition, fingerprint, NFC, and QR code verification, including penalties/rewards, leave management, and Jira integration.
+Catering Automation: Manages food reservations with QR code tokens, menu recommendations, inventory tracking, and sustainability incentives.
+Access Control: Secures access to locations using face recognition (with low-light support placeholders), vehicle plate recognition, and emergency system integration.
+The system is built using Docker, FastAPI, React, PostgreSQL, and Redis, ensuring scalability, modularity, and GDPR compliance. It includes separate Administrative and User Panels with role-based access control (RBAC), multilingual support (English, Persian, Arabic), offline capabilities, and WCAG-compliant UI.
 
-System Architecture
-The system follows a microservices architecture deployed using Docker Compose, with each service handling a specific domain. Services communicate via REST APIs and a GraphQL gateway, with PostgreSQL for data storage and Redis for caching. The frontend is a React-based single-page application (SPA) with separate Administrative and User Panels.
+Architecture
+The system follows a microservices architecture, with the following services:
 
-Services
-Attendance Service (services/attendance):
-Tech: FastAPI, SQLAlchemy, PostgreSQL
-Features: Attendance recording, leave requests/approvals, shift management, penalties/rewards, fraud detection, Jira integration, predictive leave analysis.
-Endpoints: /users/, /attendance/, /leaves/, /shifts/, /reports/attendance/pdf, /predict-leaves/
-Catering Service (services/catering):
-Tech: FastAPI, SQLAlchemy, PostgreSQL, scikit-learn
-Features: Menu management, food reservations, inventory tracking, waste reporting, AI menu recommendations, QR-based tokens, sustainability rewards.
-Endpoints: /menus/, /reservations/, /inventory/, /waste-reports/, /recommend-menu/, /tokens/pdf/, /sustainability/
-Access Control Service (services/access-control):
-Tech: FastAPI, SQLAlchemy, PostgreSQL, MQTT
-Features: Access rules, visitor management, parking reservations, face/license plate recognition (placeholders), emergency system integration.
-Endpoints: /access-rules/, /access-logs/, /visitors/, /parking/, /verify-plate/, /verify-faces/, /emergency/fire-alarm/
-AI Engine Service (services/ai-engine):
-Tech: FastAPI, pandas
-Features: Fraud detection, demand prediction for leaves and catering.
-Endpoints: /detect-fraud/, /predict-demand/
-GraphQL Service (services/graphql):
-Tech: Ariadne, FastAPI
-Features: Unified API for querying attendance, catering, and access data; transparency reports.
-Queries: attendances, reservations, accessLogs, transparencyReport
-Frontend Service (services/frontend):
-Tech: React, Tailwind CSS, Chart.js, i18next
-Features: Administrative Panel (user management, leave approval, reporting) and User Panel (attendance, reservations, schedules); supports offline mode, voice commands, and WCAG compliance.
-Components: App.js, AdminPanel.js, UserPanel.js
-Mock Services:
-Mock Jira (mock-jira): Simulates Jira API for task-hour tracking.
-Mock Calendar (mock-calendar): Simulates calendar API for visitor meeting integration.
-Data Flow
-Frontend: Users interact via the React SPA, which routes to Admin or User Panels based on JWT-decoded roles (employee, manager, hr).
-Backend: REST APIs handle requests, with GraphQL providing a unified query interface. PostgreSQL stores data, and Redis caches frequent queries.
-AI: The AI Engine processes historical data for fraud detection and predictions, communicating with other services via REST.
-IoT: MQTT is used for access control device communication (e.g., door locks, fire alarms).
-Security: JWT for authentication, AES-256 encryption for sensitive data, and opt-out options for tracking.
-Project Structure
-text
-
-Copy
-project_root/
-├── docker-compose.yml
-├── nginx.conf
-├── services/
-│   ├── attendance/
-│   │   ├── app/
-│   │   │   ├── main.py
-│   │   │   ├── database.py
-│   │   ├── tests/
-│   │   │   ├── test_main.py
-│   │   ├── Dockerfile
-│   │   ├── requirements.txt
-│   ├── catering/
-│   │   ├── app/
-│   │   │   ├── main.py
-│   │   │   ├── database.py
-│   │   ├── Dockerfile
-│   │   ├── requirements.txt
-│   ├── access-control/
-│   │   ├── app/
-│   │   │   ├── main.py
-│   │   │   ├── database.py
-│   │   ├── Dockerfile
-│   │   ├── requirements.txt
-│   ├── ai-engine/
-│   │   ├── app/
-│   │   │   ├── main.py
-│   │   ├── Dockerfile
-│   │   ├── requirements.txt
-│   ├── graphql/
-│   │   ├── app/
-│   │   │   ├── main.py
-│   │   ├── Dockerfile
-│   │   ├── requirements.txt
-│   ├── frontend/
-│   │   ├── src/
-│   │   │   ├── App.js
-│   │   │   ├── AdminPanel.js
-│   │   │   ├── UserPanel.js
-│   │   ├── package.json
-│   │   ├── Dockerfile
-│   ├── mock-jira/
-│   ├── mock-calendar/
-Setup Instructions
+Attendance Service: Handles attendance recording, leave requests, shift management, and reporting (FastAPI, PostgreSQL).
+Catering Service: Manages food reservations, menu recommendations, inventory, and sustainability tracking (FastAPI, PostgreSQL).
+Access Control Service: Controls access with face recognition, vehicle tracking, and emergency integrations (FastAPI, PostgreSQL, MQTT).
+AI Engine Service: Provides fraud detection, demand prediction, and menu recommendations (FastAPI).
+GraphQL Service: Aggregates data across services for unified queries and transparency reports (Ariadne).
+Frontend Service: Provides role-based Administrative and User Panels (React, Tailwind CSS).
+Mock Services: Simulate Jira and calendar APIs for integration testing.
+Nginx: Reverse proxy for routing requests.
+Redis: Caching and session management.
+PostgreSQL: Centralized database for all services.
+Features
+Attendance:
+Multi-factor authentication (face, fingerprint, NFC, QR).
+Penalties/rewards for tardiness/punctuality.
+Multi-stage leave approval (manager, HR).
+Dynamic shift adjustments for emergencies.
+Predictive leave demand analysis.
+Jira integration for task-hour tracking.
+Catering:
+Weekly reservation planning with AI-based menu suggestions.
+QR code tokens with smart printer integration.
+Inventory and waste management.
+Sustainability incentives for recyclable containers.
+Comparative consumption analysis.
+Access Control:
+Face recognition with low-light/multi-person support (placeholders).
+Vehicle plate recognition for parking.
+Emergency system integration (fire alarms, headcount reports).
+Meeting reservation integration (mock calendar API).
+General:
+Role-based Administrative and User Panels (manager, HR, employee).
+Transparency reports for data usage.
+Opt-out options for tracking (e.g., location).
+Mock ERP/CRM/Jira integrations.
+Energy optimization for access devices.
+Multilingual (English, Persian, Arabic) and WCAG-compliant UI.
+Offline support with IndexedDB syncing.
+Voice command integration.
 Prerequisites
-Docker: For containerized deployment.
-Node.js: For frontend development.
-Python 3.10+: For backend services.
-VS Code: Recommended IDE for development.
-Windows/Linux/Mac: Compatible with all platforms.
-Installation
+Docker and Docker Compose (version 3.8+).
+Node.js (v16+) and npm for frontend development.
+Python (3.10+) for backend services.
+Postman (optional) for API testing.
+VS Code (recommended) for development.
+Setup Instructions
 Clone the Repository:
 bash
 
 Copy
 git clone <repository-url>
-cd project_root
-Install Frontend Dependencies:
+cd <repository-directory>
+Install Dependencies:
+Backend (each service):
+bash
+
+Copy
+cd services/<service-name>
+pip install -r requirements.txt
+Frontend:
 bash
 
 Copy
 cd services/frontend
 npm install
-Install Backend Dependencies: For each service (attendance, catering, access-control, ai-engine, graphql):
-bash
-
-Copy
-cd services/<service>
-pip install -r requirements.txt
 Configure Environment:
-Update TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in services/attendance/app/main.py.
-Set SECRET_KEY for JWT in services/attendance/app/main.py.
-Ensure Docker Compose has correct port mappings.
+Update TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in services/attendance/app/main.py for notifications.
+Set SECRET_KEY in services/attendance/app/main.py for JWT authentication.
+Ensure DATABASE_URL and REDIS_URL in docker-compose.yml match your setup.
 Run the System:
 bash
 
 Copy
 docker-compose up --build
-Frontend: http://localhost:3000
-GraphQL: http://localhost:8005
-REST APIs: http://localhost:<port> (e.g., 8001 for Attendance)
+Access the frontend at http://localhost:3000.
+Access GraphQL at http://localhost:8005.
+Backend services run on ports 8001 (attendance), 8002 (catering), 8003 (access-control), 8004 (ai-engine).
+Database Initialization:
+The PostgreSQL database (attendance_db) is auto-created on startup.
+Run migrations if needed:
+bash
+
+Copy
+docker-compose exec <service> alembic upgrade head
+Usage
+Login:
+Use the frontend login page (or Postman) to authenticate with username/password.
+Obtain a JWT token stored in localStorage.
+Administrative Panel (manager or hr roles):
+Access at http://localhost:3000 after login.
+Manage users, approve leaves, configure shifts, generate PDF/Excel reports, monitor access logs, and track sustainability.
+User Panel (employee role):
+Access at http://localhost:3000 after login.
+Record attendance, reserve food, view schedules, and manage opt-out settings.
+API Testing:
+Use Postman to test endpoints:
+Attendance: http://localhost:8001 (e.g., /attendance/, /leaves/approve/).
+Catering: http://localhost:8002 (e.g., /reservations/, /tokens/pdf/{id}).
+Access Control: http://localhost:8003 (e.g., /access-logs/, /emergency/fire-alarm/).
+GraphQL queries: http://localhost:8005 (e.g., transparencyReport).
+Hardware Integration (placeholders):
+Replace face recognition placeholders (verify_face, verify_multi_person) with DeepFace or similar libraries.
+Test with cameras supporting low-light conditions and multiple feeds.
 Testing
 Backend Tests:
 bash
 
 Copy
-cd services/attendance
-pytest tests/test_main.py
-Frontend Testing: Add Jest or React Testing Library for component tests (not yet implemented).
-Manual Testing:
-Use Postman to test REST endpoints (e.g., /users/, /reservations/, /access-logs/).
-Access GraphQL at http://localhost:8005 with queries like:
-graphql
+cd services/<service-name>
+pytest
+Tests cover user creation, attendance recording, leave approval, and more.
+Frontend Tests (optional):
+Add Jest/React Testing Library tests in services/frontend/src/__tests__.
+Integration Tests:
+Verify service communication via GraphQL queries and mock integrations (Jira, calendar).
+Security
+Authentication: JWT-based with AES-256 encryption for sensitive data.
+GDPR Compliance: Transparency reports and opt-out options for tracking.
+Network: Nginx reverse proxy and Docker network isolation.
+Limitations
+Hardware-Dependent Features: Face recognition (low-light, multi-person) and IoT integrations (e.g., fire alarms) use placeholders. Replace with actual libraries/devices in production.
+Mock Integrations: Jira and calendar APIs are mocked. Replace with real endpoints for production.
+Scalability: Add load balancing (e.g., Kubernetes) and monitoring (e.g., Prometheus) for large-scale deployment.
+Future Improvements
+Implement a dedicated login page in the frontend.
+Add refresh tokens for secure session management.
+Extend with a mobile app using React Native.
+Integrate real-time monitoring with Prometheus/Grafana.
+Deploy with Kubernetes for scalability.
+Contribution
+Fork the repository.
+Create a feature branch (git checkout -b feature-name).
+Commit changes (git commit -m "Add feature").
+Push to the branch (git push origin feature-name).
+Open a pull request.
+License
+This project is licensed under the MIT License.
 
-Copy
-query {
-  transparencyReport(userId: 1) {
-    user_id
-    data_used
-  }
-}
-Usage
-Authentication
-Login: POST to /token with username and password to obtain a JWT token.
-RBAC: Roles (employee, manager, hr) determine access to Admin or User Panels.
-Token Storage: Frontend stores JWT in localStorage for API requests.
-Administrative Panel (http://localhost:3000, manager or hr role)
-User Management: Create/edit users, assign roles.
-Leave Approval: Multi-stage approval for leave requests.
-Shift Configuration: Create/adjust shifts, including emergency shifts.
-Reporting: Download attendance reports (PDF/Excel), view access log heatmaps.
-Sustainability: Track recyclable container usage and reward points.
-User Panel (http://localhost:3000, employee role)
-Attendance: Record entry/exit via button (integrates with face/NFC placeholders).
-Catering: Reserve food for the week, view AI-recommended menus, download QR tokens.
-Schedules: View personal shift schedules.
-Settings: Opt out of tracking for privacy.
-Hardware Integration (Placeholders)
-Face Recognition: Placeholder in attendance and access-control services (verify_face). Replace with DeepFace or similar for low-light/multi-person support.
-Fingerprint/NFC: Placeholder functions (verify_fingerprint, verify_nfc). Integrate with hardware SDKs.
-License Plate Recognition: Placeholder in access-control (recognize_plate). Use OpenALPR or similar.
-IoT Devices: MQTT used for door locks and fire alarms. Test with actual IoT hardware.
-Key Features
-Attendance
-Multi-Method Authentication: Face, fingerprint, NFC, QR code (placeholders).
-Penalties/Rewards: $10 penalty for tardiness (>15 min), $5 reward for punctuality.
-Leave Management: Multi-stage approval (manager, HR) with substitute suggestions.
-Fraud Detection: AI-driven anomaly detection in attendance patterns.
-Jira Integration: Mocked task-hour logging.
-Predictive Analysis: AI forecasts leave demand using historical data.
-Catering
-Reservations: Weekly planning with AI-recommended menus based on user history.
-Tokens: QR-based tokens for food pickup, printable via PDF.
-Inventory: Tracks ingredients, alerts for low stock.
-Sustainability: Rewards (10 points) for using recyclable containers.
-Waste Reporting: Tracks food waste for optimization.
-Access Control
-Access Rules: Time- and location-based rules with two-factor authentication option.
-Visitor Management: QR codes for visitors, linked to meeting schedules (mocked calendar).
-Parking: Reserves basement parking spots.
-Emergency Integration: Fire alarm triggers door unlocking and headcount reports.
-Recognition: Placeholders for low-light face recognition and multi-person identification.
-General
-Integrations: Mocked ERP/CRM/Jira/calendar APIs for extensibility.
-Transparency: Reports on data usage (e.g., attendance, access logs) via GraphQL.
-Privacy: Opt-out option for tracking (e.g., location, attendance).
-Energy Optimization: MQTT-based control of access device power states.
-Multilingual: Supports English, Persian, Arabic with RTL support.
-Offline Mode: Stores attendance/reservations in IndexedDB for offline use.
-Accessibility: WCAG-compliant frontend with voice command support.
-Security and Compliance
-Authentication: JWT with role-based access control.
-Encryption: AES-256 for sensitive data (e.g., access logs).
-GDPR: Opt-out options and transparency reports ensure compliance.
-Fraud Detection: AI monitors for suspicious patterns in attendance and access.
-Limitations and Future Work
-Hardware Integration: Current placeholders for face recognition, fingerprint, NFC, and license plate recognition require real hardware and libraries (e.g., DeepFace, OpenALPR).
-Scalability: Add load balancing (e.g., Kubernetes) and monitoring (e.g., Prometheus) for production.
-Mobile App: Extend frontend to React Native for native iOS/Android apps.
-Testing: Implement frontend unit tests and end-to-end tests.
-Real Integrations: Replace mocked Jira/ERP/CRM/calendar APIs with actual endpoints.
-AI Enhancements: Train AI models on larger datasets for better fraud detection and predictions.
-Troubleshooting
-Docker Issues: Ensure ports (3000, 8001–8005) are free. Check logs with docker-compose logs.
-API Errors: Verify JWT token in Authorization header for protected endpoints.
-Frontend Offline Mode: Ensure IndexedDB is enabled in the browser.
-Hardware Placeholders: Replace placeholder functions with actual SDKs for production.
+Contact
+For issues or questions, contact the development team at <your-email> or open an issue on the repository.
+
+Last updated: April 18, 2025
+
+Notes
+Purpose: The README.md provides a clear, concise guide for setting up, running, and extending the system, suitable for developers and stakeholders.
+Structure: It includes sections for overview, architecture, setup, usage, testing, security, limitations, and future improvements, ensuring all aspects of the project are covered.
+Alignment: The content reflects the project’s features (e.g., role-based panels, sustainability incentives, mock integrations) and setup (Docker, FastAPI, React), maintaining 100% alignment with the requirements.
+Placement: Save the README.md in the project’s root directory (<repository-directory>/README.md).
+Customization: Update placeholders like <repository-url> and <your-email> with actual values. Add specific licensing details if required.

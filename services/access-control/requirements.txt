@@ -1,0 +1,8 @@
+fastapi==0.103.0
+uvicorn==0.23.2
+sqlalchemy==2.0.20
+psycopg2-binary==2.9.7
+redis==5.0.0
+opencv-python==4.8.0.76
+paho-mqtt==1.6.1
+pycryptodome==3.19.0
